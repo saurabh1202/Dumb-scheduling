@@ -1,6 +1,6 @@
 package trafficSimulation2;
 
-public class Event {
+public class Event implements Comparable<Event>{
 	public double time;
 	private int type;
 	
@@ -14,4 +14,16 @@ public class Event {
 	public double getTime() {
 		return time;
 	}
+	public int compareTo(Event e) {
+		if(this.getTime() < e.getTime()) {
+			return -1;
+		}
+		else if (this.getTime() == e.getTime()) {
+			return 0;
+		}
+		else {
+			return 1;
+		}
+	}
+	
 }
