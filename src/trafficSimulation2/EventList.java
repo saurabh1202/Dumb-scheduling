@@ -10,8 +10,15 @@ public class EventList  {
 											}
 		
 									});
-	
-	public static void schedule() {
-		eq.queue()
+	public static void queue(Event e) {
+		eq.add(e);
+	}
+	public static Event getEvent() {
+		
+		Event e = eq.peek();
+		return e;
+	}
+	public static void dequeue() {
+		eq.remove();
 	}
 }

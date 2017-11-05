@@ -9,9 +9,11 @@ public class CarState {
 	public double speed = 4.0;
 	public double acceleration = 2.0;
 	public double deceleration = 2.0;
+	public double start_time;
 
-	public CarState(int _carID) {
+	public CarState(int _carID,double _start_time) {
 		carID = _carID;
+		start_time = _start_time;
 	}
 	
 @SuppressWarnings("unused")
