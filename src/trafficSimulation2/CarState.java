@@ -1,55 +1,300 @@
 package trafficSimulation2;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Random;
 import java.util.List;
+import java.util.Iterator;
 import gridConfiguration.GridConfig;
 
 public class CarState {
 	public int carID ;
 	public int carLength = 1;
-	public double speed = 4.0;
-	public double acceleration = 2.0;
-	public double deceleration = 2.0;
+	public static EventPerformer ep = new EventPerformer();
+	public static EventScheduler es = new EventScheduler();
+	public static final double speed = 4.0;
+	public static final double acceleration = 2.0;
+	public static final double deceleration = 2.0;
 	public double start_time;
-
+	public double end_time;
+	private int entry_point[] = new int[2];
+	private int exit_point[] = new int[2];
+	public static final int block_size = 100; // Size of the block
+	public int distance_covered = 0;
+	public double time_in_system = end_time - start_time;
+	public int total_distance;
+	public double total_time;
+	public int dist;
+	public static final double time_acc = (speed - 0)/acceleration;// time spent while accelerating to a constant speed
+	public static final double dist_acc = 0.5 * acceleration * time_acc * time_acc; // Distance covered accelerating.
+	public static final double time_dec = (speed - 0)/deceleration;// time spent covered while decelerating to zero.
+	public static final double dist_dec = (speed * time_dec) - (0.5 * deceleration * time_dec * time_dec);// Distance covered decelerating
+	//TotalTime to cover a distance = 0.5 * ((speed/acceleration) + (speed/deceleration)) + (distance/speed); // This equation should be only considered if
+																											 // dist_acc + dist_dec <= Distance to be covered
+	public List<Integer> path = new ArrayList<Integer>();
+	public int current_start_street ;
+	public int current_start_avenue ;
+	public int current_end_street;
+	public int current_end_avenue;
+	public int current_lane;
+	
+	public CarState(int i , int j , int x , int y) {
+		current_start_street = i;
+		current_start_avenue = j;
+		current_end_street = x;
+		current_end_avenue = y;
+	}
 	public CarState(int _carID,double _start_time) {
 		carID = _carID;
 		start_time = _start_time;
+		Random r = new Random();
+		int High = 2*(GridConfig.grid_size-1);
+		int Result1 = r.nextInt(High) ;
+		int Result2 = r.nextInt(High) ;
+		entry_point[0]= 0;//GridConfig.entry_points[Result1][0];
+		entry_point[1]= 1;//GridConfig.entry_points[Result1][1];
+		
+		exit_point[0]=4;//GridConfig.exit_points[Result2][0];
+		exit_point[1]=1;//GridConfig.exit_points[Result2][1];
+		System.out.println("the entry is "+ entry_point[0] + " , "+entry_point[1]);
+		System.out.println("the exit is "+ exit_point[0] + " , "+exit_point[1]);		
+		path = generatePath(entry_point,exit_point);
+		path.add(0,entry_point[0]);
+		path.add(1,entry_point[1]);
+		path.add(exit_point[0]);
+		path.add(exit_point[1]);
+		total_distance = block_size*((path.size()/2) - 1);
+		total_time = 0.5 * ((speed/acceleration) + (speed/deceleration)) + (total_distance/speed);
+		System.out.println("The car is going to travel the following path " + path);
+		//roadGenerator(path);
 	}
+	/*public void roadGenerator() {
+		Iterator<Integer> itr = path.iterator();
+		List<Integer> turn = new ArrayList<Integer>();
+		while(itr.hasNext()) {
+			int x = itr.next();
+			if (x/10 == 1 || x/10 == 2 || x/10 == 3) {
+				turn.add(x);
+				itr.remove();
+			}
+		}
+		Integer intersection[] = new Integer[path.size()];
+		intersection = path.toArray(intersection);
+		Simulator.rc[entry_point[0]][entry_point[1]][intersection[0]][intersection[1]].setLane(turn.get(0));
+		Simulator.rc[entry_point[0]][entry_point[1]][intersection[0]][intersection[1]].addCarToLane(this);
+		//moveCar(entry_point[0],entry_point[1],intersection[0],intersection[1]);
+		for (int i = 0; i < intersection.length ; i=i+2) {
+			
+		}
+		//System.out.println("the turns " + turn);
+		//System.out.println("intersections " + path);
+	}
+	public static void moveCar(int i , int j , int x , int y) {
+		int road_type ;
+		if (i == x) {
+			road_type = 0;
+		}
+		else if (j == y) {
+			road_type = 1;
+		}
+		int dist = Simulator.rc[i][j][x][y].getCurrentCapacity();
+		if (dist >= (dist_acc + dist_dec)) {
+			double time =  0.5 * ((speed/acceleration) + (speed/deceleration)) + (dist/speed);
+			Event e = new Event(4,time);
+			EventList.queue(e);
+		}
+		else if () {
+			
+		}
+	}*/
+	public List<Integer> roadGenerator() {
+		Iterator<Integer> itr = path.iterator();
+		return path;
+		//List<Integer> turn = new ArrayList<Integer>();
+		/*while(itr.hasNext()) {
+			int x = itr.next();
+			if (x/10 == 1 || x/10 == 2 || x/10 == 3) {
+				turn.add(x);
+				itr.remove();
+			}
+		}
+		*/
+		
+		//Integer turning[] = new Integer[turn.size()];
+		//turning = path.toArray(turning);
+		//boolean change_in_street = false;
+		//boolean change_in_avenue = false;
 	
+		
+		/*if (entry_point[0] != intersection[0]) {
+			int else_part = 0;
+			Simulator.rc[entry_point[0]][entry_point[1]][intersection[0]][intersection[1]].setLane(turning[0]);
+			for (int i = 0 ; i < intersection.length ; i=i+2) {
+				if(intersection[i] != intersection[i+2]) {
+					if(else_part == 0) {
+						Simulator.rc[intersection[i]][intersection[i+1]][intersection[i+2]][intersection[i+3]].setLane(turning[0]);
+					}
+					else if (else_part > 0) {
+						Simulator.rc[intersection[i]][intersection[i+1]][intersection[i+2]][intersection[i+3]].setLane(turning[2]);
+					}
+				}
+				else {
+					else_part += 1;
+					Simulator.rc[intersection[i]][intersection[i+1]][intersection[i+2]][intersection[i+3]].setLane(turning[1]);
+				}
+			}
+		}
+		else if*/
+		
+		
+	}
+public void moveCar() {
+		
+		Integer intersection[] = new Integer[path.size()];
+		intersection = path.toArray(intersection);
+		//int lane[];
+		int count = 0;
+		for (int i = 0 ; i < intersection.length ; i++) {
+			if(intersection[i]/10 > 0) {
+				count++;
+			}
+		}
+		if (count == 1) {
+			//lane = new int[1];
+			int turning = intersection[2];
+			for (int i = 0 ; i < intersection.length ; i++) {
+				if(intersection[i]==turning) {
+					path.remove(intersection[i]);
+				}
+			}
+		for (int i = 2 ; i < path.size() - 1 ; i = i + 2) {
+			Simulator.rc[path.get(i-2)][path.get(i-1)][path.get(i)][path.get(i+1)].setLane(intersection[2]);
+			dist = Simulator.rc[path.get(i-2)][path.get(i-1)][path.get(i)][path.get(i+1)].getCurrentCapacity();
+			while(distance_covered != block_size) {
+				if(dist >= (dist_acc + dist_dec)) {
+					double time = 0.5 * ((speed/acceleration) + (speed/deceleration)) + (dist/speed);
+					distance_covered = distance_covered + dist;
+					end_time = end_time + time;
+					System.out.println("end time " + end_time);				
+					Simulator.clock = Simulator.clock + time;
+					System.out.println("clock " + Simulator.clock);
+				}
+				else if (dist < (dist_acc + dist_dec)){
+					double time = dist/speed;
+					distance_covered = distance_covered + dist;
+					end_time = end_time + time;
+					System.out.println("end time " + end_time);				
+					Simulator.clock = Simulator.clock + time;
+					System.out.println("clock " + Simulator.clock);
+				}
+				dist = Simulator.rc[path.get(i-2)][path.get(i-1)][path.get(i)][path.get(i+1)].getCurrentCapacity() - dist;
+			}
+			Simulator.rc[path.get(i-2)][path.get(i-1)][path.get(i)][path.get(i+1)].addCarToLane(this);
+			if(path.get(i-2) != path.get(i)) {
+				// Its a change in street no. hence check avenue light
+				if(Simulator.tl[path.get(i)][path.get(i+1)][1].get_current_light() == "green") {
+					CarState c1 =Simulator.rc[path.get(i-2)][path.get(i-1)][path.get(i)][path.get(i+1)].removeCarFromLane();
+					System.out.println("Car " + c1.carID + " found a green light at " + path.get(i) + " , " + path.get(i+1) + " and has left the intersection at " + Simulator.clock);
+				}
+			}
+			else if (path.get(i-1) != path.get(i+1)) {
+				//Its a change in avenue no. hence check street light 
+				if(Simulator.tl[path.get(i)][path.get(i+1)][0].get_current_light() == "green") {
+					CarState c1 =Simulator.rc[path.get(i-2)][path.get(i-1)][path.get(i)][path.get(i+1)].removeCarFromLane();
+					System.out.println("Car " + c1.carID + " found a green light at " + path.get(i) + " , " + path.get(i+1) + " and has left the intersection at " + Simulator.clock);
+
+				}
+			}
+			
+		}
+	}
+		
+			/*
+			for (int i = 2 ; i < path.size() - 1; i=i+2) {
+				Simulator.rc[path.get(i-2)][path.get(i-1)][path.get(i)][path.get(i+1)].setLane(turning);
+				int dist = Simulator.rc[path.get(i-2)][path.get(i-1)][path.get(i)][path.get(i+1)].getCurrentCapacity(); 
+				while(distance_covered != block_size) {
+					if(dist >= (dist_acc + dist_dec)) {
+						double time = 0.5 * ((CarState.speed/CarState.acceleration) + (CarState.speed/CarState.deceleration)) + (dist/CarState.speed);
+						distance_covered = distance_covered + dist;
+						end_time = end_time + time;
+						Simulator.clock = Simulator.clock + time;
+						System.out.println("Car " + carID + " is nearing the intersection at " + path.get(i) + " , "+path.get(i+1)  + " and has travelled the distance " + distance_covered + " in time " + time + " at " + Simulator.clock);
+						Event e = new Event(4,Simulator.clock + time);
+						EventList.queue(e);
+						dist = Simulator.rc[path.get(i-2)][path.get(i-1)][path.get(i)][path.get(i+1)].getCurrentCapacity() - dist;						
+					}
+				}
+				Simulator.rc[path.get(i-2)][path.get(i-1)][path.get(i)][path.get(i+1)].addCarToLane(this);
+				System.out.println("Car has reached the intersection " + path.get(i) + " , " + path.get(i+1) + " at Simulation clock " + Simulator.clock);
+				if(path.get(i-2) != path.get(i)) {
+					// Its a change in street no. hence check avenue light
+					if(Simulator.tl[path.get(i)][path.get(i+1)][1].get_current_light() == "green") {
+						CarState c1 =Simulator.rc[path.get(i-2)][path.get(i-1)][path.get(i)][path.get(i+1)].removeCarFromLane();
+						System.out.println("Car " + c1.carID + " found a green light at " + path.get(i) + " , " + path.get(i+1) + " and has left the intersection at " + Simulator.clock);
+					}
+				}
+				else if (path.get(i-1) != path.get(i+1)) {
+					//Its a change in avenue no. hence check street light 
+					if(Simulator.tl[path.get(i)][path.get(i+1)][0].get_current_light() == "green") {
+						//
+					}
+				}
+				
+			}
+			
+		*/
+		else if(count == 2) {
+			//lane = new int[2];
+			return;
+		}
+		else {
+			//lane = new int[3];
+			return;
+		}
+	}
 @SuppressWarnings("unused")
-public List<Integer> generatePath(int entry_point[] , int exit_point[]){
+public static List<Integer> generatePath(int entry_point[] , int exit_point[]){
 		
 		int i = entry_point[0];
 		int j = entry_point[1];
 		int x = exit_point[0];
 		int y = exit_point[1];
 		int left = 10;
-		int middle = 11;
-		int right = 12;
+		int middle = 20;
+		int right = 30;
 		List<Integer> intersections = new ArrayList<Integer>();
 		if (i == 0) {
 			// Its a NS avenue entry
-			intersections.add(++i);
-			intersections.add(j);
+			
 			// Now since we have discovered that it is a NS avenue entry , it is time to discover whether it is a
-			// NS avenue exit, EW street exit , WE street exit
+			// NS avenue exit, EW street exit , WE street exit , SN Avenue exit
 			if(x == GridConfig.NO_OF_STREETS-1) {
 				// Its a NS avenue exit
 				// Now its time to figure out whether it the car should be put in right lane or left lane
 				if (j < y) {
 					// Put the car in the left lane queue
+					
+					intersections.add(left);// This is to notify that in which the lane the car will be put to. Left,middle,right.
+					intersections.add(++i);
+					intersections.add(j);	
+					
+					
 					// Now , since we know its a NS avenue entry , the next intersection joins with the EW street
 					// so car cannot make a left turn , hence we move to the next intersection in the 
 					// NS direction which will be a WE street and there we can make our left turn.
 					// hence the next step
-					intersections.add(10);// This is to notify that in which the lane the car will be put to. Left,middle,right.
 					intersections.add(++i);
 					intersections.add(j);
+					intersections.add(right);
+					// here since we have to make a right turn since we are going down the NS avenue we put the vehicle in the right lane
+					
 					while(j != y) {
 						// here we make our left turn and go up to the avenue no. in which we have to exit.
+						
 						intersections.add(i);
 						intersections.add(++j);
 					}
+					intersections.add(middle);
 					// Now we have reached the avenue in which we have to exit but still not reached the row where 
 					// we want to exit .
 					// Now we will go to the row no. - 1 where we have to exit
@@ -64,11 +309,15 @@ public List<Integer> generatePath(int entry_point[] , int exit_point[]){
 					// Put the car in the right lane queue
 					// Since the next intersection is a EW street and we want to take a right we don't need to go to 
 					// the next intersection, we can take a right from there itself.
-					intersections.add(12); //putting the car in the right lane. 
+					intersections.add(right);//putting the car in the right lane. 
+					intersections.add(++i);
+					intersections.add(j);
+					intersections.add(left);// Since it is going to take a left turn next put it in the left lane
 					while(j != y) {
 						intersections.add(i);
 						intersections.add(--j);						
 					}
+					intersections.add(middle);
 					while(i != x - 1) {
 						intersections.add(++i);
 						intersections.add(j);
@@ -77,7 +326,9 @@ public List<Integer> generatePath(int entry_point[] , int exit_point[]){
 				}
 				else {
 					// Put the car in the middle lane queue
-					intersections.add(11);
+					intersections.add(middle);
+					intersections.add(++i);
+					intersections.add(j);
 					while(i != x - 1) {
 						intersections.add(++i);
 						intersections.add(j);						
@@ -85,14 +336,60 @@ public List<Integer> generatePath(int entry_point[] , int exit_point[]){
 				}
 				
 			}
+			else if(x==0) {
+				// Its a SN avenue exit ; a kind of a U exit.
+				if (j < y) {
+					// Put the car in the left lane
+					intersections.add(left);
+					intersections.add(++i);
+					intersections.add(j);
+					
+					//since here we are on the EW street the traffic is in the opposite direction of where we want to go , Hence move down one
+					//more block
+					intersections.add(++i);
+					intersections.add(j);
+					intersections.add(left);
+					while(j != y) {
+						intersections.add(i);
+						intersections.add(++j);
+					}
+					intersections.add(middle);
+					while(i != x + 1) {
+						intersections.add(--i);
+						intersections.add(j);
+					}					
+				}
+				else if (j > y) {
+					// Put the car in the right lane
+					intersections.add(right);
+					intersections.add(++i);
+					intersections.add(j);
+					intersections.add(right);
+					
+					while(j != y) {
+						
+						intersections.add(i);
+						intersections.add(--j);
+					}
+					intersections.add(middle);
+					while(i != x + 1) {
+						intersections.add(--i);
+						intersections.add(j);
+					}
+				}
+			}
 			else if (y == 0) {
 				//Its a EW street exit
 				// Put the car in the right lane
-				intersections.add(12);
+				intersections.add(right);
+				intersections.add(++i);
+				intersections.add(j);
+				
 				while(i != x) {
 					intersections.add(++i);
 					intersections.add(j);
 				}
+				intersections.add(middle);
 				while(j != y + 1) {
 					intersections.add(i);
 					intersections.add(--j);
@@ -100,11 +397,14 @@ public List<Integer> generatePath(int entry_point[] , int exit_point[]){
 			}
 			else {
 				// Its a WE street exit
-				intersections.add(10);//putting the car in the left lane
+				intersections.add(left);//putting the car in the left lane
+				intersections.add(++i);
+				intersections.add(j);
 				while(i != x) {
 					intersections.add(++i);
 					intersections.add(j);
 				}
+				intersections.add(middle);
 				while(j != y - 1) {
 					intersections.add(i);
 					intersections.add(++j);
@@ -113,25 +413,30 @@ public List<Integer> generatePath(int entry_point[] , int exit_point[]){
 		}
 		else if (i == GridConfig.NO_OF_STREETS - 1) {
 			// Its a SN avenue entry
-			intersections.add(--i);
-			intersections.add(j);
+			
 			// Now since we have discovered that it is a SN avenue entry , it is time to discover whether it is a
-			// SN avenue exit, EW street exit , WE street exit
+			// SN avenue exit, EW street exit , WE street exit , NS avenue exit
 			if(x == 0) {
 				// Its a SN avenue exit
 				if (j < y) {
 					// Put the car in the right lane
-					intersections.add(12);//putting the car in the right lane
+					intersections.add(right);//putting the car in the right lane
+					intersections.add(--i);
+					intersections.add(j);
+					
+					
 					if ((GridConfig.NO_OF_STREETS - 2) % 2 != 0) {
 						// the street that meets at first intersection is a EW street hence the car needs to travel
 						//upwards to the next intersection where the street would be a WE street
 						intersections.add(--i);
 						intersections.add(j);
 					}
+					intersections.add(left);
 					while(j != y) {
 						intersections.add(i);
 						intersections.add(++j);
 					}
+					intersections.add(middle);
 					while(i != x + 1) {
 						intersections.add(--i);
 						intersections.add(j);
@@ -139,17 +444,22 @@ public List<Integer> generatePath(int entry_point[] , int exit_point[]){
 				}
 				else if (j > y) {
 					// put the car in the left lane
-					intersections.add(10);//putting the car in the left lane
+					intersections.add(left);
+					intersections.add(--i);
+					intersections.add(j);
+					
 					if((GridConfig.NO_OF_STREETS - 2) % 2 == 0){
 						// the street that meets at first intersection is a WE street hence the car needs to travel
 						//upwards to the next intersection where the street would be a EW street
 						intersections.add(--i);
 						intersections.add(j);
 					}
+					intersections.add(right);
 					while(j != y) {
 						intersections.add(i);
 						intersections.add(--j);
 					}
+					intersections.add(middle);
 					while(i != x + 1) {
 						intersections.add(--i);
 						intersections.add(j);
@@ -157,9 +467,60 @@ public List<Integer> generatePath(int entry_point[] , int exit_point[]){
 				}
 				else {
 					// put the car in the middle lane
-					intersections.add(11);
+					intersections.add(middle);
+					intersections.add(--i);
+					intersections.add(j);
 					while(i != x + 1) {
 						intersections.add(--i);
+						intersections.add(j);
+					}
+				}
+			}
+			else if(x == GridConfig.NO_OF_STREETS - 1) {
+				// Its a NS Avenue exit
+				if (j < y) {
+					// Put the car in the right lane
+					intersections.add(right);
+					intersections.add(--i);
+					intersections.add(j);
+					
+					
+					if ((GridConfig.NO_OF_STREETS - 2) % 2 != 0 ) {
+						// Traffic in opposite direction hence move up one block
+						intersections.add(--i);
+						intersections.add(j);
+					}
+					intersections.add(right);
+					while(j != y) {
+						intersections.add(i);
+						intersections.add(++j);
+					}
+					intersections.add(middle);
+					while(i != x - 1) {
+						intersections.add(++i);
+						intersections.add(j);
+					}
+				}
+				if (j > y) {
+					// Put the car in the left lane
+					intersections.add(left);
+					intersections.add(--i);
+					intersections.add(j);
+					
+					
+					if((GridConfig.NO_OF_STREETS - 2) % 2 == 0) {
+						// Traffic in opposite direction hence move up one block
+						intersections.add(--i);
+						intersections.add(j);
+					}
+					intersections.add(left);
+					while(j != y) {
+						intersections.add(i);
+						intersections.add(--j);
+					}
+					intersections.add(middle);
+					while(i != x - 1) {
+						intersections.add(++i);
 						intersections.add(j);
 					}
 				}
@@ -167,7 +528,10 @@ public List<Integer> generatePath(int entry_point[] , int exit_point[]){
 			else if(y == 0) {
 				// Its a EW street exit
 				// put car in the left lane
-				intersections.add(10);
+				intersections.add(left);
+				intersections.add(--i);
+				intersections.add(j);
+				
 				if ((GridConfig.NO_OF_STREETS - 2) % 2 == 0 ) {
 					intersections.add(--i);
 					intersections.add(j);
@@ -176,6 +540,7 @@ public List<Integer> generatePath(int entry_point[] , int exit_point[]){
 					intersections.add(--i);
 					intersections.add(j);
 				}
+				intersections.add(middle);
 				while( j != y + 1) {
 					intersections.add(i);
 					intersections.add(--j);
@@ -184,7 +549,11 @@ public List<Integer> generatePath(int entry_point[] , int exit_point[]){
 			else {
 				// Its a WE street exit
 				//put car in the right lane
-				intersections.add(12);
+				intersections.add(right);
+				intersections.add(--i);
+				intersections.add(j);
+
+				
 				if ((GridConfig.NO_OF_STREETS - 2) % 2 != 0) {
 					intersections.add(--i);
 					intersections.add(j);
@@ -193,6 +562,7 @@ public List<Integer> generatePath(int entry_point[] , int exit_point[]){
 					intersections.add(--i);
 					intersections.add(j);
 				}
+				intersections.add(middle);
 				while(j != y - 1) {
 					intersections.add(i);
 					intersections.add(++j);
@@ -201,22 +571,27 @@ public List<Integer> generatePath(int entry_point[] , int exit_point[]){
 		}
 		else if (j == GridConfig.NO_OF_AVENUES - 1) {
 			// Its a EW street entry
-			intersections.add(i);
-			intersections.add(--j);
-			// Now it can be a EW exit, NS exit or SN exit
+			
+			// Now it can be a EW exit, NS exit ,SN exit , WE exit
 			if (y == 0) {
 				// Its a EW street exit
 				if(i < x) {
 					//put the car in the left lane queue
-					intersections.add(10);
+					intersections.add(left);
+					intersections.add(i);
+					intersections.add(--j);
+					
+					
 					if((GridConfig.NO_OF_AVENUES - 2) % 2 == 0) {
 						intersections.add(i);
 						intersections.add(--j);
 					}
+					intersections.add(right);
 					while(i != x) {
 						intersections.add(++i);
 						intersections.add(j);
 					}
+					intersections.add(middle);
 					while(j != y + 1) {
 						intersections.add(i);
 						intersections.add(--j);
@@ -224,15 +599,21 @@ public List<Integer> generatePath(int entry_point[] , int exit_point[]){
 				}
 				else if (i > x) {
 					// Put the car in the right lane queue
-					intersections.add(12);
+					intersections.add(right);
+					intersections.add(i);
+					intersections.add(--j);
+					
+					
 					if ((GridConfig.NO_OF_AVENUES - 2) % 2 != 0) {
 						intersections.add(i);
 						intersections.add(--j);
 					}
+					intersections.add(left);
 					while(i != x) {
 						intersections.add(--i);
 						intersections.add(j);
 					}
+					intersections.add(middle);
 					while(j != y + 1) {
 						intersections.add(i);
 						intersections.add(--j);
@@ -240,21 +621,76 @@ public List<Integer> generatePath(int entry_point[] , int exit_point[]){
 				}
 				else {
 					// put the car in the middle lane queue
-					intersections.add(11);
+					intersections.add(middle);
+					intersections.add(i);
+					intersections.add(--j);
 					while(j != y + 1) {
 						intersections.add(i);
 						intersections.add(--j);
 					}
 				}
 			}
+			else if(y == GridConfig.NO_OF_AVENUES - 1){
+				// Its a WE street exit
+				if(i < x) {
+					//Put the car in the left lane
+					intersections.add(left);
+					intersections.add(i);
+					intersections.add(--j);
+					
+					
+					if((GridConfig.NO_OF_AVENUES - 2) % 2 == 0) {
+						// traffic in opposite direction hence move towards West for one block
+						intersections.add(i);
+						intersections.add(--j);
+					}
+					intersections.add(left);
+					while(i != x) {
+						intersections.add(++i);
+						intersections.add(j);
+					}
+					intersections.add(middle);
+					while(j != y - 1) {
+						intersections.add(i);
+						intersections.add(++j);
+					}
+				}
+				else if(i > x) {
+					//Put the car in the right lane 
+					intersections.add(right);
+					intersections.add(i);
+					intersections.add(--j);
+					
+					
+					if ((GridConfig.NO_OF_AVENUES - 2) % 2 != 0) {
+						// Traffic in opposite direction hence move towards West for one block
+						intersections.add(i);
+						intersections.add(--j);
+					}
+					intersections.add(right);
+					while(i != x) {
+						intersections.add(--i);
+						intersections.add(j);						
+					}
+					intersections.add(middle);
+					while(j != y - 1) {
+						intersections.add(i);
+						intersections.add(++j);
+					}
+				}				
+			}
 			else if(x == GridConfig.NO_OF_STREETS - 1) {
 				// Its a NS avenue exit
 				// Put the car in the left lane
-				intersections.add(10);
+				intersections.add(left);
+				intersections.add(i);
+				intersections.add(--j);
+				
 				while(j != y) {
 					intersections.add(i);
 					intersections.add(--j);
 				}
+				intersections.add(middle);
 				while(i != x - 1) {
 					intersections.add(++i);
 					intersections.add(j);
@@ -262,11 +698,15 @@ public List<Integer> generatePath(int entry_point[] , int exit_point[]){
 			}
 			else { 
 				// Its a SN avenue exit
-				intersections.add(12);//putting the car in the right lane
+				intersections.add(right);//putting the car in the right lane
+				intersections.add(i);
+				intersections.add(--j);
+				
 				while(j != y) {
 					intersections.add(i);
 					intersections.add(--j);
 				}
+				intersections.add(middle);
 				while(i != x + 1) {
 					intersections.add(--i);
 					intersections.add(j);
@@ -275,18 +715,22 @@ public List<Integer> generatePath(int entry_point[] , int exit_point[]){
 		}
 		else if (j == 0) {
 			//Its a WE street entry
-			intersections.add(i);
-			intersections.add(++j);
-			// Now decide whether its a WE street exit, NS avenue exit or SN avenue exit
+			
+			// Now decide whether its a WE street exit, NS avenue exit ,SN avenue exit , EW street exit
 			if(y == GridConfig.NO_OF_AVENUES - 1) {
 				// Its a WE street exit
 				if (i < x) {
 					//Putting the car in the right lane
-					intersections.add(12);
+					intersections.add(right);
+					intersections.add(i);
+					intersections.add(++j);
+					intersections.add(left);
+					
 					while(i != x) {
 						intersections.add(++i);
 						intersections.add(j);
 					}
+					intersections.add(middle);
 					while(j != y - 1) {
 						intersections.add(i);
 						intersections.add(++j);
@@ -294,15 +738,21 @@ public List<Integer> generatePath(int entry_point[] , int exit_point[]){
 				}
 				else if (i > x) {
 					// Put the car in the left lane queue from the start
-					intersections.add(10);
+					intersections.add(left);
+					intersections.add(i);
+					intersections.add(++j);
+					
+					
 					// Since the first intersection is a NS avenue the car cannot turn left hence it should travel
 					// one more intersection towards East
 					intersections.add(i);
 					intersections.add(++j);
+					intersections.add(right);
 					while(i != x) {
 						intersections.add(--i);
 						intersections.add(j);
 					}
+					intersections.add(middle);
 					while(j != y - 1) {
 						intersections.add(i);
 						intersections.add(++j);
@@ -311,21 +761,68 @@ public List<Integer> generatePath(int entry_point[] , int exit_point[]){
 				else {
 					// Its a straight exit in the WE street
 					// put the car in the middle lane 
-					intersections.add(11);
+					intersections.add(middle);
+					intersections.add(i);
+					intersections.add(++j);
 					while(j != y - 1) {
 						intersections.add(i);
 						intersections.add(++j);
 					}
 				}
 			}
+			else if(y == 0) {
+				// Its a EW street exit
+				if(i < x) {
+					//put the car in the right lane
+					intersections.add(right);
+					intersections.add(i);
+					intersections.add(++j);
+					intersections.add(right);
+					
+					while(i != x) {
+						intersections.add(++i);
+						intersections.add(j);
+					}
+					intersections.add(middle);
+					while(j != y + 1) {
+						intersections.add(i);
+						intersections.add(--j);
+					}
+				}
+				else if (i > x) {
+					// Put the car in the left lane
+					intersections.add(left);
+					intersections.add(i);
+					intersections.add(++j);
+					
+					
+					// Since the traffic is in the opposite direction in this avenue we move towards East for one block
+					intersections.add(i);
+					intersections.add(++j);
+					intersections.add(left);
+					while(i != x) {
+						intersections.add(--i);
+						intersections.add(j);
+					}
+					intersections.add(middle);
+					while(j != y + 1) {
+						intersections.add(i);
+						intersections.add(--j);
+					}
+				}
+			}
 			else if (x == 0) {
 				// Its a SN avenue exit
 				// Put the car in the left lane queue
-				intersections.add(10);
+				intersections.add(left);
+				intersections.add(i);
+				intersections.add(++j);
+				
 				while(j != y) {
 					intersections.add(i);
 					intersections.add(++j);
 				}
+				intersections.add(middle);
 				while(i != x + 1) {
 					intersections.add(--i);
 					intersections.add(j);
@@ -334,11 +831,15 @@ public List<Integer> generatePath(int entry_point[] , int exit_point[]){
 			else {
 				// Its a NS avenue exit
 				// Put the car in the right lane queue
-				intersections.add(12);
+				intersections.add(right);
+				intersections.add(i);
+				intersections.add(++j);
+				
 				while(j != y) {
 					intersections.add(i);
 					intersections.add(++j);
 				}
+				intersections.add(middle);
 				while(i != x - 1) {
 					intersections.add(++i);
 					intersections.add(j);
