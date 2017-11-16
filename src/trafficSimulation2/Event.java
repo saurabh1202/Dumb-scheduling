@@ -4,7 +4,16 @@ public class Event implements Comparable<Event>{
 	public double time;
 	private int type;
 	private CarState c;
-	
+	int i,j,x,y,road;
+	public Event(int _type , double _time , int _i , int _j , int _x , int _y , int _road) {
+		type = _type;
+		time = _time;
+		i = _i;
+		j = _j;
+		x = _x;
+		y = _y;
+		road = _road;
+	}
 	public Event(int _type, double _time) {
 		type = _type;
 		time = _time;

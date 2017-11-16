@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Iterator;
 import gridConfiguration.GridConfig;
 
-public class CarState {
+public class CarState extends RoadConstructor{
 	public int carID ;
 	public int carLength = 1;
 	public static EventPerformer ep = new EventPerformer();
@@ -15,43 +15,53 @@ public class CarState {
 	public static final double acceleration = 2.0;
 	public static final double deceleration = 2.0;
 	public double start_time;
+	//public double last_movement_time;
+	//public double last_movement_end_time;
 	public double end_time;
 	private int entry_point[] = new int[2];
 	private int exit_point[] = new int[2];
 	public static final int block_size = 100; // Size of the block
 	public int distance_covered = 0;
-	public double time_in_system = end_time - start_time;
+	public double time_in_system;
 	public int total_distance;
 	public double total_time;
+	public double total_waiting_time;
 	public int dist;
-	public static final double time_acc = (speed - 0)/acceleration;// time spent while accelerating to a constant speed
-	public static final double dist_acc = 0.5 * acceleration * time_acc * time_acc; // Distance covered accelerating.
-	public static final double time_dec = (speed - 0)/deceleration;// time spent covered while decelerating to zero.
-	public static final double dist_dec = (speed * time_dec) - (0.5 * deceleration * time_dec * time_dec);// Distance covered decelerating
-	//TotalTime to cover a distance = 0.5 * ((speed/acceleration) + (speed/deceleration)) + (distance/speed); // This equation should be only considered if
-																											 // dist_acc + dist_dec <= Distance to be covered
+	public double time;	
+	public int no_of_turns ;
 	public List<Integer> path = new ArrayList<Integer>();
 	public int current_start_street ;
 	public int current_start_avenue ;
 	public int current_end_street;
 	public int current_end_avenue;
 	public int current_lane;
+	public int total_roads;
+	public int completed_roads;
+	public int current_road[] = new int[4];
+	public ArrayList<Integer> lane_id = new ArrayList<Integer>();
+	public Integer lane_identity[]; 
+	public Integer ints[] ;
+	public int ints_updater;
+	public Iterator<Integer> itr;
+	public static final double time_acc = (speed - 0)/acceleration;// time spent while accelerating to a constant speed
+	public static final double dist_acc = 0.5 * acceleration * time_acc * time_acc; // Distance covered accelerating.
+	public static final double time_dec = (speed - 0)/deceleration;// time spent covered while decelerating to zero.
+	public static final double dist_dec = (speed * time_dec) - (0.5 * deceleration * time_dec * time_dec);// Distance covered decelerating
+	//TotalTime to cover a distance = 0.5 * ((speed/acceleration) + (speed/deceleration)) + (distance/speed); // This equation should be only considered if
+																											 // dist_acc + dist_dec <= Distance to be covered
 	
-	public CarState(int i , int j , int x , int y) {
-		current_start_street = i;
-		current_start_avenue = j;
-		current_end_street = x;
-		current_end_avenue = y;
-	}
+	
 	public CarState(int _carID,double _start_time) {
+		super();
 		carID = _carID;
 		start_time = _start_time;
+		end_time = start_time;
 		Random r = new Random();
 		int High = 2*(GridConfig.grid_size-1);
 		int Result1 = r.nextInt(High) ;
 		int Result2 = r.nextInt(High) ;
-		entry_point[0]= 0;//GridConfig.entry_points[Result1][0];
-		entry_point[1]= 1;//GridConfig.entry_points[Result1][1];
+		entry_point[0]=0;//GridConfig.entry_points[Result1][0];
+		entry_point[1]=1;//GridConfig.entry_points[Result1][1];
 		
 		exit_point[0]=4;//GridConfig.exit_points[Result2][0];
 		exit_point[1]=1;//GridConfig.exit_points[Result2][1];
@@ -62,11 +72,59 @@ public class CarState {
 		path.add(1,entry_point[1]);
 		path.add(exit_point[0]);
 		path.add(exit_point[1]);
-		total_distance = block_size*((path.size()/2) - 1);
-		total_time = 0.5 * ((speed/acceleration) + (speed/deceleration)) + (total_distance/speed);
 		System.out.println("The car is going to travel the following path " + path);
+		itr = path.iterator();
+		int k = 0;
+		for (int i = 0; i < path.size(); i++) {
+			//System.out.println(path.get(i));
+			if (path.get(i)/10 > 0) {
+				lane_id.add(k, path.get(i));
+				path.remove(i);
+				k++;
+			}
+		}
+		lane_identity= new Integer[lane_id.size()];
+		lane_identity = lane_id.toArray(lane_identity);
+		//System.out.println(Arrays.toString(lane_identity));
+		if(lane_identity.length == 1) {
+			no_of_turns = 0;
+		}
+		else if (lane_identity.length == 2) {
+			no_of_turns = 1;
+		}
+		else {
+			no_of_turns = 2;
+		}
+		ints = new Integer[path.size()];
+		ints = path.toArray(ints);
+		//System.out.println(Arrays.toString(ints));
+		total_roads = (ints.length/2) - 1; 
+		total_distance = block_size*(total_roads);
+		total_time = 0.5 * ((speed/acceleration) + (speed/deceleration)) + (total_distance/speed);
+		ints_updater = 0;
+		//System.out.println("yes working");
 		//roadGenerator(path);
 	}
+	public void setCurrentLane(int _current_lane) {
+		current_lane = _current_lane;
+	}
+	public int getCurrentLane() {
+		return current_lane;
+	}
+	public void setCurrentRoad() {
+		if(ints_updater <= (ints.length - 4)) {
+			current_start_street = ints[ints_updater];
+			current_start_avenue = ints[ints_updater + 1];
+			current_end_street = ints[ints_updater + 2];
+			current_end_avenue = ints[ints_updater + 3];
+			//System.out.println(current_start_street + " , " + current_start_avenue + " , " + current_end_street + " , " + current_end_avenue);
+		}
+		else {
+			System.out.println("Car " + this.carID + " has exited the grid at exit point " + exit_point[0] + exit_point[1]);
+			System.out.println(" It had a total time in system of " + time_in_system + " with a total waiting time of " + total_waiting_time);
+		}
+	}
+	
 	/*public void roadGenerator() {
 		Iterator<Integer> itr = path.iterator();
 		List<Integer> turn = new ArrayList<Integer>();
@@ -106,9 +164,7 @@ public class CarState {
 			
 		}
 	}*/
-	public List<Integer> roadGenerator() {
-		Iterator<Integer> itr = path.iterator();
-		return path;
+	
 		//List<Integer> turn = new ArrayList<Integer>();
 		/*while(itr.hasNext()) {
 			int x = itr.next();
@@ -146,67 +202,9 @@ public class CarState {
 		else if*/
 		
 		
-	}
-public void moveCar() {
-		
-		Integer intersection[] = new Integer[path.size()];
-		intersection = path.toArray(intersection);
-		//int lane[];
-		int count = 0;
-		for (int i = 0 ; i < intersection.length ; i++) {
-			if(intersection[i]/10 > 0) {
-				count++;
-			}
-		}
-		if (count == 1) {
-			//lane = new int[1];
-			int turning = intersection[2];
-			for (int i = 0 ; i < intersection.length ; i++) {
-				if(intersection[i]==turning) {
-					path.remove(intersection[i]);
-				}
-			}
-		for (int i = 2 ; i < path.size() - 1 ; i = i + 2) {
-			Simulator.rc[path.get(i-2)][path.get(i-1)][path.get(i)][path.get(i+1)].setLane(intersection[2]);
-			dist = Simulator.rc[path.get(i-2)][path.get(i-1)][path.get(i)][path.get(i+1)].getCurrentCapacity();
-			while(distance_covered != block_size) {
-				if(dist >= (dist_acc + dist_dec)) {
-					double time = 0.5 * ((speed/acceleration) + (speed/deceleration)) + (dist/speed);
-					distance_covered = distance_covered + dist;
-					end_time = end_time + time;
-					System.out.println("end time " + end_time);				
-					Simulator.clock = Simulator.clock + time;
-					System.out.println("clock " + Simulator.clock);
-				}
-				else if (dist < (dist_acc + dist_dec)){
-					double time = dist/speed;
-					distance_covered = distance_covered + dist;
-					end_time = end_time + time;
-					System.out.println("end time " + end_time);				
-					Simulator.clock = Simulator.clock + time;
-					System.out.println("clock " + Simulator.clock);
-				}
-				dist = Simulator.rc[path.get(i-2)][path.get(i-1)][path.get(i)][path.get(i+1)].getCurrentCapacity() - dist;
-			}
-			Simulator.rc[path.get(i-2)][path.get(i-1)][path.get(i)][path.get(i+1)].addCarToLane(this);
-			if(path.get(i-2) != path.get(i)) {
-				// Its a change in street no. hence check avenue light
-				if(Simulator.tl[path.get(i)][path.get(i+1)][1].get_current_light() == "green") {
-					CarState c1 =Simulator.rc[path.get(i-2)][path.get(i-1)][path.get(i)][path.get(i+1)].removeCarFromLane();
-					System.out.println("Car " + c1.carID + " found a green light at " + path.get(i) + " , " + path.get(i+1) + " and has left the intersection at " + Simulator.clock);
-				}
-			}
-			else if (path.get(i-1) != path.get(i+1)) {
-				//Its a change in avenue no. hence check street light 
-				if(Simulator.tl[path.get(i)][path.get(i+1)][0].get_current_light() == "green") {
-					CarState c1 =Simulator.rc[path.get(i-2)][path.get(i-1)][path.get(i)][path.get(i+1)].removeCarFromLane();
-					System.out.println("Car " + c1.carID + " found a green light at " + path.get(i) + " , " + path.get(i+1) + " and has left the intersection at " + Simulator.clock);
+	
 
-				}
-			}
-			
-		}
-	}
+	
 		
 			/*
 			for (int i = 2 ; i < path.size() - 1; i=i+2) {
@@ -243,15 +241,6 @@ public void moveCar() {
 			}
 			
 		*/
-		else if(count == 2) {
-			//lane = new int[2];
-			return;
-		}
-		else {
-			//lane = new int[3];
-			return;
-		}
-	}
 @SuppressWarnings("unused")
 public static List<Integer> generatePath(int entry_point[] , int exit_point[]){
 		

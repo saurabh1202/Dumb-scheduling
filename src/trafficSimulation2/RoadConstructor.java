@@ -1,8 +1,10 @@
 package trafficSimulation2;
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
 
-public class RoadConstructor extends CarState{
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
+public class RoadConstructor {
 	public int start_street ;
 	public int start_avenue ; 
 	public int end_street ; 
@@ -11,8 +13,9 @@ public class RoadConstructor extends CarState{
 	public ArrayBlockingQueue<CarState> leftLane = new ArrayBlockingQueue<CarState>(100);
 	public ArrayBlockingQueue<CarState> middleLane = new ArrayBlockingQueue<CarState>(100);
 	public ArrayBlockingQueue<CarState> rightLane = new ArrayBlockingQueue<CarState>(100);
+	public RoadConstructor() {};
 	public RoadConstructor(int i , int j , int x , int y){
-		super(i,j,x,y);
+		
 		
 		start_street = i;
 		start_avenue = j ;
@@ -43,6 +46,7 @@ public class RoadConstructor extends CarState{
 			return rightLane.remainingCapacity();
 		}
 		else if (lane == "middle") {
+			//System.out.println("here");
 			return middleLane.remainingCapacity();
 		}
 		return 0;
@@ -56,22 +60,53 @@ public class RoadConstructor extends CarState{
 			rightLane.add(c);
 		}
 		else if (lane == "middle") {
+			
 			middleLane.add(c);
+			//System.out.println("middle queue " + middleLane.peek().carID);
 		}
 	}
-	public CarState removeCarFromLane() {
-		if (lane == "left") {
-			CarState c = leftLane.remove();
-			return c;
+	public boolean checkIfLeftLaneEmpty() {
+		if(!(leftLane.isEmpty())) {
+			return false;
 		}
-		else if (lane == "right") {
-			CarState c = rightLane.remove();
-			return c;
+		else {
+			return true;
 		}
-		else if (lane == "middle") {
-			CarState c = middleLane.remove();
-			return c;
+	}
+	public boolean checkIfMiddleLaneEmpty() {
+		if(!(middleLane.isEmpty())) {
+			return false;
 		}
-		return null;
+		else {
+			return true;
+		}
+	}
+	public boolean checkIfRightLaneEmpty() {
+		if(!(rightLane.isEmpty())) {
+			return false;
+		}
+		else {
+			return true;
+		}
+	}
+	public CarState removeCarFromLeftLane() {
+		CarState c = leftLane.poll();
+		return c;
+	}
+	public CarState removeCarFromMiddleLane() {
+		CarState c = middleLane.poll();
+		return c;
+	}
+	public CarState removeCarFromRightLane() {
+		CarState c = rightLane.poll();
+		return c;
+	}
+	public CarState peekLeftLane() {
+		CarState c = leftLane.peek();
+		return c;
+	}
+	public CarState peekMiddleLane() {
+		CarState c = middleLane.peek();
+		return c;
 	}
 }
