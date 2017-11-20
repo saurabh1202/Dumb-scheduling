@@ -85,20 +85,26 @@ public class EventScheduler {
 				c.dist = capacity;	
 				//System.out.println(c.dist);
 				if(capacity == CarState.block_size) {
-					Simulator.rc[c.current_start_street][c.current_start_avenue][c.current_end_street][c.current_end_avenue].addCarToLane(c);
+					if(!(Simulator.rc[c.current_start_street][c.current_start_avenue][c.current_end_street][c.current_end_avenue].checkIfCarPresent(c))) {
+						Simulator.rc[c.current_start_street][c.current_start_avenue][c.current_end_street][c.current_end_avenue].addCarToLane(c);
+					}					
 					double time_taken_for_movement = 0.5 * ((CarState.speed/CarState.acceleration) + (CarState.speed/CarState.deceleration)) + (c.dist/CarState.speed);
 					Event e = new Event(4,c.end_time + Simulator.clock - c.end_time + time_taken_for_movement ,c);
 					EventList.queue(e);
 				}
 				else if(capacity < CarState.block_size && capacity > (CarState.dist_acc + CarState.dist_dec)) {
-					Simulator.rc[c.current_start_street][c.current_start_avenue][c.current_end_street][c.current_end_avenue].addCarToLane(c);
+					if(!(Simulator.rc[c.current_start_street][c.current_start_avenue][c.current_end_street][c.current_end_avenue].checkIfCarPresent(c))) {
+						Simulator.rc[c.current_start_street][c.current_start_avenue][c.current_end_street][c.current_end_avenue].addCarToLane(c);
+					}
 					double time_taken_for_movement =  0.5 * ((CarState.speed/CarState.acceleration) + (CarState.speed/CarState.deceleration)) + (c.dist/CarState.speed);
 					// Now check here if c
 					Event e = new Event(5,c.end_time + Simulator.clock - c.end_time + time_taken_for_movement , c);
 					EventList.queue(e);
 				}
 				else if(capacity < CarState.block_size && capacity < (CarState.dist_acc + CarState.dist_dec)) {
-					Simulator.rc[c.current_start_street][c.current_start_avenue][c.current_end_street][c.current_end_avenue].addCarToLane(c);
+					if(!(Simulator.rc[c.current_start_street][c.current_start_avenue][c.current_end_street][c.current_end_avenue].checkIfCarPresent(c))) {
+						Simulator.rc[c.current_start_street][c.current_start_avenue][c.current_end_street][c.current_end_avenue].addCarToLane(c);
+					}
 					double time_taken_for_movement =  Math.sqrt(2 * c.dist/CarState.acceleration);
 					Event e = new Event(5,c.end_time + Simulator.clock - c.end_time +time_taken_for_movement , c);
 					EventList.queue(e);
@@ -109,19 +115,25 @@ public class EventScheduler {
 				c.dist = capacity;	
 				//System.out.println(c.dist);
 				if(capacity == CarState.block_size) {
-					Simulator.rc[c.current_start_street][c.current_start_avenue][c.current_end_street][c.current_end_avenue].addCarToLane(c);
+					if(!(Simulator.rc[c.current_start_street][c.current_start_avenue][c.current_end_street][c.current_end_avenue].checkIfCarPresent(c))) {
+						Simulator.rc[c.current_start_street][c.current_start_avenue][c.current_end_street][c.current_end_avenue].addCarToLane(c);
+					}
 					double time_taken_for_movement = 0.5 * ((CarState.speed/CarState.acceleration) + (CarState.speed/CarState.deceleration)) + (c.dist/CarState.speed);
 					Event e = new Event(4,c.end_time + Simulator.clock - c.end_time + time_taken_for_movement ,c);
 					EventList.queue(e);
 				}
 				else if(capacity < CarState.block_size && capacity > (CarState.dist_acc + CarState.dist_dec)) {
-					Simulator.rc[c.current_start_street][c.current_start_avenue][c.current_end_street][c.current_end_avenue].addCarToLane(c);
+					if(!(Simulator.rc[c.current_start_street][c.current_start_avenue][c.current_end_street][c.current_end_avenue].checkIfCarPresent(c))) {
+						Simulator.rc[c.current_start_street][c.current_start_avenue][c.current_end_street][c.current_end_avenue].addCarToLane(c);
+					}
 					double time_taken_for_movement =  0.5 * ((CarState.speed/CarState.acceleration) + (CarState.speed/CarState.deceleration)) + (c.dist/CarState.speed);
 					Event e = new Event(5,c.end_time + Simulator.clock - c.end_time + time_taken_for_movement , c);
 					EventList.queue(e);
 				}
 				else if(capacity < (CarState.dist_acc + CarState.dist_dec)) {
-					Simulator.rc[c.current_start_street][c.current_start_avenue][c.current_end_street][c.current_end_avenue].addCarToLane(c);
+					if(!(Simulator.rc[c.current_start_street][c.current_start_avenue][c.current_end_street][c.current_end_avenue].checkIfCarPresent(c))) {
+						Simulator.rc[c.current_start_street][c.current_start_avenue][c.current_end_street][c.current_end_avenue].addCarToLane(c);
+					}
 					double time_taken_for_movement =  Math.sqrt(2 * c.dist/CarState.acceleration);
 					Event e = new Event(5,c.end_time + Simulator.clock - c.end_time + time_taken_for_movement , c);
 					EventList.queue(e);
@@ -132,12 +144,50 @@ public class EventScheduler {
 	public void scheduleCarDeque(double _last_event_time,int _i, int _j, int _x, int _y , int _rt) {
 		
 		double last_event_time = _last_event_time;
+		
 		int i = _i;
 		int j = _j;
 		int x = _x;
 		int y = _y;
 		int road = _rt;
-		Event e = new Event(6,last_event_time,i,j,x,y,road);
+		int left_lane_counter = 0;
+		int middle_lane_counter = 0;
+		int right_lane_counter = 0;
+		
+		try{
+			for(CarState c : Simulator.rc[i][j][x][y].leftLane) {
+				int dist_to_cover = CarState.block_size - c.dist;
+				double time_to_cover = dist_to_cover/1 ;
+				if (time_to_cover <= 30) {
+					left_lane_counter++; 
+				}				
+			}
+		}catch(Exception e) {
+			//System.out.println("No car found in the queue");
+		}
+		try {
+			for(CarState c : Simulator.rc[i][j][x][y].middleLane) {
+				int dist_to_cover = CarState.block_size - c.dist;
+				double time_to_cover = dist_to_cover/1;
+				if (time_to_cover <= 30) {
+					middle_lane_counter++; 
+				}
+			}
+		}catch(Exception e) {
+			//System.out.println("No car found in the queue");
+		}
+		try {
+			for(CarState c : Simulator.rc[i][j][x][y].rightLane) {
+				int dist_to_cover = CarState.block_size - c.dist;
+				double time_to_cover = dist_to_cover/1;
+				if (time_to_cover <= 30) {
+					right_lane_counter++; 
+				}
+			}
+		}catch(Exception e) {
+			//System.out.println("No car found in the queue");
+		}
+		Event e = new Event(6,last_event_time,i,j,x,y,road,left_lane_counter,middle_lane_counter,right_lane_counter);
 		EventList.queue(e);
 		return;
 	}

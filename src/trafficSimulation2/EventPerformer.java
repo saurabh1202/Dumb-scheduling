@@ -90,7 +90,7 @@ public class EventPerformer {
 		//c.last_movement_time = Simulator.clock;
 		c.distance_covered = c.distance_covered + c.dist;
 		c.end_time = c.end_time + c.time;
-		Simulator.rc[c.current_start_street][c.current_start_avenue][c.current_end_street][c.current_end_avenue].addCarToLane(c);
+		//Simulator.rc[c.current_start_street][c.current_start_avenue][c.current_end_street][c.current_end_avenue].addCarToLane(c);
 		System.out.println("Car " + c.carID + " has advanced and queued in the road " + c.current_start_street+ " , " + c.current_start_avenue + " , "+c.current_end_street + " , " + c.current_end_avenue + "  road at Simulation clock = " + Simulator.clock);
 		return;
 		//es.scheduleCarMovement(c);	
@@ -110,6 +110,7 @@ public class EventPerformer {
 	}
 	public void carLeftIntersection(Event e) throws Exception{
 		Simulator.clock = e.getTime();
+		while(e.left_lane_counter != 0) {
 			try {
 				CarState c1 = Simulator.rc[e.i][e.j][e.x][e.y].removeCarFromLeftLane();
 				es.scheduleCarQueuing(c1);
@@ -121,17 +122,29 @@ public class EventPerformer {
 			catch(Exception u) {
 				//System.out.println("No Car was found queued at intersection in the left lane of " + e.x + " , " + e.y);
 			}
+			e.left_lane_counter--;
+		}
+		while(e.middle_lane_counter != 0) {
 			try {
-				CarState c2 = Simulator.rc[e.i][e.j][e.x][e.y].removeCarFromMiddleLane();
+				
+				/*CarState c2 = Simulator.rc[e.i][e.j][e.x][e.y].removeCarFromMiddleLane();
 				es.scheduleCarQueuing(c2);
-				System.out.println("Car " + c2.carID + " left the intersection from the middle lane of  " + e.x + " , " + e.y + " at Simulation clock = " + Simulator.clock);
-				for(CarState c : Simulator.rc[e.i][e.j][e.x][e.y].middleLane) {
-					System.out.println("Currently in this queue is " + c.carID);
+				//System.out.println("Car " + c2.carID + " left the intersection from the middle lane of  " + e.x + " , " + e.y + " at Simulation clock = " + Simulator.clock);
+				Iterator<CarState> itr = Simulator.rc[e.i][e.j][e.x][e.y].middleLane.iterator();
+				int i = 0;
+				while(itr.hasNext()) {
+					CarState c = itr.next();
+					System.out.println("Currently in this queue " + c.carID );
+					i++;
 				}
+				System.out.println("total cars in the queue " + i);*/
 			}
 			catch(Exception u) {
 				//System.out.println("No Car was found queued at intersection in the middle lane of " + e.x + " , " + e.y);
 			}
+			e.middle_lane_counter--;
+		}
+		while(e.right_lane_counter != 0) {
 			try{
 				CarState c3 = Simulator.rc[e.i][e.j][e.x][e.y].removeCarFromRightLane();
 				es.scheduleCarQueuing(c3);
@@ -143,11 +156,12 @@ public class EventPerformer {
 			catch(Exception u) {
 			//System.out.println("No Car was found queued at intersection in the right lane of " + e.x + " , " + e.y);
 			}
+			e.right_lane_counter--;
+		}
 	}	
 	public void carGridExit(Event e , CarState c) {
 		Simulator.clock = e.getTime();
 		System.out.println("Car " + c.carID + " has exited the grid at intersection " + c.current_end_street + " , " +c.current_end_avenue + " at Simulation clock = " + Simulator.clock);
-		System.out.println("Its time in system was " + (c.end_time - c.start_time) + " time units and total waiting time was " + (c.end_time - c.start_time - c.total_time));
-		
+		System.out.println("Its time in system was " + (c.end_time - c.start_time) + " time units and total waiting time was " + (c.end_time - c.start_time - c.total_time));		
 	}
 }

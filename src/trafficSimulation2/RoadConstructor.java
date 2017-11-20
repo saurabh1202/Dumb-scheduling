@@ -101,12 +101,39 @@ public class RoadConstructor {
 		CarState c = rightLane.poll();
 		return c;
 	}
-	public CarState peekLeftLane() {
+	/*public CarState peekLeftLane() {
 		CarState c = leftLane.peek();
 		return c;
 	}
 	public CarState peekMiddleLane() {
 		CarState c = middleLane.peek();
 		return c;
+	}*/
+	public boolean checkIfCarPresent(CarState c) {
+		if(lane == "left") {
+			if(leftLane.contains(c)) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
+		else if (lane == "middle") {
+			if(middleLane.contains(c)) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
+		else {
+			if(rightLane.contains(c)) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
 	}
+	
 }
