@@ -27,7 +27,7 @@ public class CarState extends RoadConstructor{
 	public double total_time;
 	public double total_waiting_time;
 	public int dist;
-	public double time;	
+	//public double time;	
 	public int no_of_turns ;
 	public List<Integer> path = new ArrayList<Integer>();
 	public int current_start_street ;
@@ -37,6 +37,7 @@ public class CarState extends RoadConstructor{
 	public int current_lane;
 	public int total_roads;
 	public int completed_roads;
+	public ArrayList<Integer> change_lane = new ArrayList<Integer>();
 	public int current_road[] = new int[4];
 	public ArrayList<Integer> lane_id = new ArrayList<Integer>();
 	public Integer lane_identity[]; 
@@ -60,13 +61,13 @@ public class CarState extends RoadConstructor{
 		int High = 2*(GridConfig.grid_size-1);
 		int Result1 = r.nextInt(High) ;
 		int Result2 = r.nextInt(High) ;
-		entry_point[0]=0;//GridConfig.entry_points[Result1][0];
-		entry_point[1]=1;//GridConfig.entry_points[Result1][1];
+		entry_point[0]=GridConfig.entry_points[Result1][0];
+		entry_point[1]=GridConfig.entry_points[Result1][1];
 		
-		exit_point[0]=4;//GridConfig.exit_points[Result2][0];
-		exit_point[1]=1;//GridConfig.exit_points[Result2][1];
-		System.out.println("the entry is "+ entry_point[0] + " , "+entry_point[1]);
-		System.out.println("the exit is "+ exit_point[0] + " , "+exit_point[1]);		
+		exit_point[0]=GridConfig.exit_points[Result2][0];
+		exit_point[1]=GridConfig.exit_points[Result2][1];
+		//System.out.println("the entry is "+ entry_point[0] + " , "+entry_point[1]);
+		//System.out.println("the exit is "+ exit_point[0] + " , "+exit_point[1]);		
 		path = generatePath(entry_point,exit_point);
 		path.add(0,entry_point[0]);
 		path.add(1,entry_point[1]);
@@ -77,7 +78,8 @@ public class CarState extends RoadConstructor{
 		int k = 0;
 		for (int i = 0; i < path.size(); i++) {
 			//System.out.println(path.get(i));
-			if (path.get(i)/10 > 0) {
+			if (path.get(i)/10 > 0 || path.get(i)/20 > 0 || path.get(i)/30 > 0) {
+				change_lane.add(i);
 				lane_id.add(k, path.get(i));
 				path.remove(i);
 				k++;
@@ -86,11 +88,12 @@ public class CarState extends RoadConstructor{
 		lane_identity= new Integer[lane_id.size()];
 		lane_identity = lane_id.toArray(lane_identity);
 		//System.out.println(Arrays.toString(lane_identity));
+		//System.out.println(change_lane);
 		if(lane_identity.length == 1) {
 			no_of_turns = 0;
 		}
 		else if (lane_identity.length == 2) {
-			no_of_turns = 1;
+			no_of_turns = 1;			
 		}
 		else {
 			no_of_turns = 2;
@@ -102,6 +105,9 @@ public class CarState extends RoadConstructor{
 		total_distance = block_size*(total_roads);
 		total_time = 0.5 * ((speed/acceleration) + (speed/deceleration)) + (total_distance/speed);
 		ints_updater = 0;
+		total_waiting_time = 0;
+		time_in_system = 0;
+		
 		//System.out.println("yes working");
 		//roadGenerator(path);
 	}
@@ -112,17 +118,89 @@ public class CarState extends RoadConstructor{
 		return current_lane;
 	}
 	public void setCurrentRoad() {
-		if(ints_updater <= (ints.length - 4)) {
-			current_start_street = ints[ints_updater];
-			current_start_avenue = ints[ints_updater + 1];
-			current_end_street = ints[ints_updater + 2];
-			current_end_avenue = ints[ints_updater + 3];
-			//System.out.println(current_start_street + " , " + current_start_avenue + " , " + current_end_street + " , " + current_end_avenue);
+		if (no_of_turns == 2) {
+			if(ints_updater == 0) {
+				setCurrentLane(lane_identity[0]);
+				if(ints_updater <= (ints.length - 4)) {
+					current_start_street = ints[ints_updater];
+					current_start_avenue = ints[ints_updater + 1];
+					current_end_street = ints[ints_updater + 2];
+					current_end_avenue = ints[ints_updater + 3];
+				}
+			}
+			else if (ints_updater == change_lane.get(1) - 2) {
+				setCurrentLane(lane_identity[1]);
+				//System.out.println(current_lane);
+				if(ints_updater <= (ints.length - 4)) {
+					current_start_street = ints[ints_updater];
+					current_start_avenue = ints[ints_updater + 1];
+					current_end_street = ints[ints_updater + 2];
+					current_end_avenue = ints[ints_updater + 3];
+				}
+			}
+			else if (ints_updater == change_lane.get(2) - 2) {
+				setCurrentLane(lane_identity[2]);
+				//System.out.println(current_lane);
+				if(ints_updater <= (ints.length - 4)) {
+					current_start_street = ints[ints_updater];
+					current_start_avenue = ints[ints_updater + 1];
+					current_end_street = ints[ints_updater + 2];
+					current_end_avenue = ints[ints_updater + 3];
+				}
+			}
+			else {
+				if(ints_updater <= (ints.length - 4)) {
+					current_start_street = ints[ints_updater];
+					current_start_avenue = ints[ints_updater + 1];
+					current_end_street = ints[ints_updater + 2];
+					current_end_avenue = ints[ints_updater + 3];
+				}
+			}
 		}
-		else {
+		else if (no_of_turns == 1) {
+			if(ints_updater == 0) {
+				setCurrentLane(lane_identity[0]);
+				if(ints_updater <= (ints.length - 4)) {
+					current_start_street = ints[ints_updater];
+					current_start_avenue = ints[ints_updater + 1];
+					current_end_street = ints[ints_updater + 2];
+					current_end_avenue = ints[ints_updater + 3];
+				}
+			}
+			else if (ints_updater == change_lane.get(1) - 2) {
+				setCurrentLane(lane_identity[1]);
+				if(ints_updater <= (ints.length - 4)) {
+					current_start_street = ints[ints_updater];
+					current_start_avenue = ints[ints_updater + 1];
+					current_end_street = ints[ints_updater + 2];
+					current_end_avenue = ints[ints_updater + 3];
+				}
+			}
+			else {
+				if(ints_updater <= (ints.length - 4)) {
+					current_start_street = ints[ints_updater];
+					current_start_avenue = ints[ints_updater + 1];
+					current_end_street = ints[ints_updater + 2];
+					current_end_avenue = ints[ints_updater + 3];
+				}
+			}
+		}
+		else if (no_of_turns == 0) {
+			if (ints_updater == 0) {
+				setCurrentLane(lane_identity[0]);
+			}
+			if(ints_updater <= (ints.length - 4)) {
+				current_start_street = ints[ints_updater];
+				current_start_avenue = ints[ints_updater + 1];
+				current_end_street = ints[ints_updater + 2];
+				current_end_avenue = ints[ints_updater + 3];
+			//System.out.println(current_start_street + " , " + current_start_avenue + " , " + current_end_street + " , " + current_end_avenue);
+			}
+		}
+		/*else {
 			System.out.println("Car " + this.carID + " has exited the grid at exit point " + exit_point[0] + exit_point[1]);
 			System.out.println(" It had a total time in system of " + time_in_system + " with a total waiting time of " + total_waiting_time);
-		}
+		}*/
 	}
 	
 	/*public void roadGenerator() {

@@ -174,14 +174,19 @@ public class Simulator {
 				ep.carAdvanced(e,c);
 			}
 			else if (e.getType() == 6) {
-				ep.carLeftIntersection(e);
+				CarState c = e.getCarState();
+				ep.LeftIntersection(e,c);
 			}
 			else if (e.getType() == 7) {
 				CarState c = e.getCarState();
 				ep.carGridExit(e, c);
 			}
-			
+			else if (e.getType() == 8) {
+				ep.stillGreen(e);
+			}
 		}
-	}
-	
+		System.out.println("total cars exited = " + EventPerformer.total_cars_exited);
+		System.out.println("The average time in system for this simulation cycle was " + Statistics.calAverageTimeinSystem());
+		System.out.println("The average waiting time for a car in this simulation cycle was " + Statistics.calAverageWaitingTime());
+	}	
 }

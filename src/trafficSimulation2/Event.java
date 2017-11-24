@@ -5,6 +5,7 @@ public class Event implements Comparable<Event>{
 	private int type;
 	private CarState c;
 	int i,j,x,y,road,left_lane_counter,middle_lane_counter,right_lane_counter;
+	int dist_to_cover;
 	public Event(int _type , double _time , int _i , int _j , int _x , int _y , int _road , int _lc , int _mc , int _rc) {
 		type = _type;
 		time = _time;
@@ -16,6 +17,19 @@ public class Event implements Comparable<Event>{
 		left_lane_counter = _lc;
 		middle_lane_counter = _mc;
 		right_lane_counter = _rc;
+	}
+	public Event(int _type, double _time, int _i , int _j , int _rd ){
+		type = _type;
+		time = _time;
+		i = _i;
+		j = _j;
+		road = _rd;
+	}
+	public Event(int _type, double _time, CarState _c , int _dist_to_cover) {
+		type = _type;
+		time = _time;
+		c = _c;
+		dist_to_cover = _dist_to_cover;
 	}
 	public Event(int _type, double _time) {
 		type = _type;

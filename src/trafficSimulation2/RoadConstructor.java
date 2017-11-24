@@ -10,6 +10,9 @@ public class RoadConstructor {
 	public int end_street ; 
 	public int end_avenue ;
 	public String lane;
+	public int left_count;
+	public int middle_count;
+	public int right_count;
 	public ArrayBlockingQueue<CarState> leftLane = new ArrayBlockingQueue<CarState>(100);
 	public ArrayBlockingQueue<CarState> middleLane = new ArrayBlockingQueue<CarState>(100);
 	public ArrayBlockingQueue<CarState> rightLane = new ArrayBlockingQueue<CarState>(100);
@@ -21,6 +24,9 @@ public class RoadConstructor {
 		start_avenue = j ;
 		end_street = x;
 		end_avenue = y;
+		left_count = 0;
+		middle_count = 0;
+		right_count = 0;
 		//System.out.println("A road for " + start_street + " , " + start_avenue + " to " + end_street + " , " + end_avenue + " has been created");
 		
 		
@@ -37,6 +43,9 @@ public class RoadConstructor {
 		else if (x == 30) {
 			lane = "right";
 		}
+	}
+	public String getLane() {
+		return lane;
 	}
 	public int getCurrentCapacity() {
 		if(lane == "left") {
@@ -89,15 +98,15 @@ public class RoadConstructor {
 			return true;
 		}
 	}
-	public CarState removeCarFromLeftLane() {
+	public CarState removeCarFromLeftLane(){
 		CarState c = leftLane.poll();
 		return c;
 	}
-	public CarState removeCarFromMiddleLane() {
+	public CarState removeCarFromMiddleLane(){
 		CarState c = middleLane.poll();
 		return c;
 	}
-	public CarState removeCarFromRightLane() {
+	public CarState removeCarFromRightLane(){
 		CarState c = rightLane.poll();
 		return c;
 	}
@@ -135,5 +144,44 @@ public class RoadConstructor {
 			}
 		}
 	}
-	
+	public void incrementCount() {
+		if (lane == "left") {
+			left_count++;
+		}
+		else if (lane == "middle") {
+			middle_count++;
+		}
+		else if (lane == "right") {
+			right_count++;
+		}
+	}
+	public void decrementLeftCount() {
+		left_count--;
+	}
+	public void decrementMiddleCount() {
+		middle_count--;
+	}
+	public void decrementRightCount(){
+		right_count--;
+	}
+	public int getLeftCount() {
+		return left_count;
+	}
+	public int getMiddleCount() {
+		return middle_count;
+	}
+	public int getRightCount() {
+		return right_count;
+	}
+	public int getCount() {
+		if (lane == "left") {
+			return left_count;
+		}
+		else if(lane == "middle") {
+			return middle_count;
+		}
+		else {
+			return right_count;
+		}
+	}
 }
