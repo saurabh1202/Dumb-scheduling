@@ -78,7 +78,7 @@ public class CarState extends RoadConstructor{
 		int k = 0;
 		for (int i = 0; i < path.size(); i++) {
 			//System.out.println(path.get(i));
-			if (path.get(i)/10 > 0 || path.get(i)/20 > 0 || path.get(i)/30 > 0) {
+			if (path.get(i)/1000 > 0 || path.get(i)/2000 > 0 || path.get(i)/3000 > 0) {
 				change_lane.add(i);
 				lane_id.add(k, path.get(i));
 				path.remove(i);
@@ -326,9 +326,9 @@ public static List<Integer> generatePath(int entry_point[] , int exit_point[]){
 		int j = entry_point[1];
 		int x = exit_point[0];
 		int y = exit_point[1];
-		int left = 10;
-		int middle = 20;
-		int right = 30;
+		int left = 1000;
+		int middle = 2000;
+		int right = 3000;
 		List<Integer> intersections = new ArrayList<Integer>();
 		if (i == 0) {
 			// Its a NS avenue entry

@@ -34,13 +34,13 @@ public class RoadConstructor {
 	public void setLane(int _lane) {
 	
 		int x = _lane ;
-		if(x == 10) {
+		if(x == 1000) {
 			lane = "left";
 		}
-		else if(x == 20) {
+		else if(x == 2000) {
 			lane = "middle";
 		}
-		else if (x == 30) {
+		else if (x == 3000) {
 			lane = "right";
 		}
 	}

@@ -1,31 +1,55 @@
 package trafficSimulation2;
 import java.util.*;
+
 public class EventScheduler {
 
 	public static double interarrival_time;
-	public static double lambda = 1;
+	public static double lambda ;
 	public static Random rand = new Random();
 	public static EventScheduler es = new EventScheduler();
 	public void scheduleNextArrival(double _last_event_time) {
 		
 		double last_event_time = _last_event_time;
-		interarrival_time = Math.ceil(-Math.log(1-rand.nextFloat())/lambda);
+		//interarrival_time = Math.ceil(-Math.log(1-rand.nextFloat())/lambda);
+		//interarrival_time = Math.round(a * 100)/100;
 		//System.out.println("last event time " + last_event_time);
 		//System.out.println("interarrival time = " + interarrival_time);
-		Event e = new Event(1,last_event_time + interarrival_time);
-		EventList.queue(e);
+		//Event e = new Event(1,last_event_time + interarrival_time);
+		//EventList.queue(e);
+		//return;
+		int j = 0;
+		for (double i = 0.0; i != Simulator.max_simulation_time && j <= Simulator.no_of_cars ; i = i + last_event_time ) {
+			
+			interarrival_time = -1 * Math.log(1-rand.nextFloat())/lambda;
+			System.out.println("interarrival time = " + interarrival_time);
+			Event e = new Event(1,last_event_time + interarrival_time);
+			EventList.queue(e);
+			last_event_time = last_event_time + interarrival_time;
+			System.out.println("last event time " + last_event_time);
+			j++;
+		}
+		//System.out.println("total no. of cars scheduled in the grid is  " + (j - 1));
+		//System.exit(0);
+	}
+	public void scheduleNextGreenToYellow(double _last_event_time , Event _e) {
+		double last_event_time = _last_event_time;
+		Event e = _e;
+		Event e1 = new Event(9,last_event_time + TrafficLightsState.green_time,e.i,e.j,e.road);
+		EventList.queue(e1);
 		return;
 	}
-	public void scheduleNextGreenToYellow(double _last_event_time) {
+	public void scheduleNextYellowToRed(double _last_event_time, Event _e) {
 		double last_event_time = _last_event_time;
-		Event e = new Event(2,last_event_time + TrafficLightsState.red_time);
-		EventList.queue(e);
+		Event e = _e;
+		Event e1 = new Event(10,last_event_time + TrafficLightsState.yellow_time,e.i,e.j,e.road);
+		EventList.queue(e1);
 		return;
 	}
-	public void scheduleNextYellowToRed(double _last_event_time) {
+	public void scheduleNextRedToGreen(double _last_event_time, Event _e) {
 		double last_event_time = _last_event_time;
-		Event e = new Event(3,last_event_time + TrafficLightsState.green_time + TrafficLightsState.yellow_time);
-		EventList.queue(e);
+		Event e = _e;
+		Event e1 = new Event(11,last_event_time + TrafficLightsState.red_time,e.i,e.j,e.road);
+		EventList.queue(e1);
 		return;
 	}
 	
@@ -71,18 +95,21 @@ public class EventScheduler {
 	}
 	*/
 	public void scheduleCarQueuing(CarState c) throws Exception{
-		//System.out.println("Now queuing");
+		//System.out.println("Now scheduling Car " + c.carID);
 		//if (c.no_of_turns == 0) {
 			//System.out.println("no_of_turns " + c.no_of_turns);
 		try {
 			c.setCurrentRoad();
 			//c.setCurrentLane(c.lane_identity[0]);
+			//System.out.println("before setting lane");
+			//System.out.println("now setting lane as " + c.current_lane);
 			Simulator.rc[c.current_start_street][c.current_start_avenue][c.current_end_street][c.current_end_avenue].setLane(c.current_lane);
 			//System.out.println(Simulator.rc[c.current_start_street][c.current_start_avenue][c.current_end_street][c.current_end_avenue].getLane());
-			//System.out.println(c.lane_identity[0]);
+			//System.out.println("after setting lane");
 			//System.exit(0);
 			if(c.end_time == c.start_time) {
 				//System.out.println("inside if");
+				//System.out.println("Now scheduling Car " + c.carID);
 				int count = Simulator.rc[c.current_start_street][c.current_start_avenue][c.current_end_street][c.current_end_avenue].getCount();
 				int capacity = CarState.block_size - count;
 				c.dist = capacity;	
